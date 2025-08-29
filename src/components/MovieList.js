@@ -19,7 +19,7 @@ const MovieList = ({title,data,hideSeeAll}) => {
 
   }
   return (
-    <View style={{marginBottom:32,marginTop:16}}>
+    <View style={{marginTop:20}}>
       <View style={styles.container}>
         <Text style={styles.titleText}>{title}</Text>
         {
@@ -80,6 +80,6 @@ const styles = StyleSheet.create({
     alignItems:'center',
     flexDirection:'row',
     marginHorizontal:16,
-    marginVertical:16
+    marginVertical:20
   }
 })

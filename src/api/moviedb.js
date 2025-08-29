@@ -1,5 +1,5 @@
 import axios from "axios";
-import { apiKey } from "../constants";
+import { apiKey } from "../constants/api";
 
 
 const apiBaseUrl='https://api.themoviedb.org/3'
@@ -37,6 +37,29 @@ const apiCall = async (endpoint, params) => {
       return null; // Return null or handle error as necessary
     }
   };
+  const API_BASE_URL = 'http://10.0.2.2:5000'; // Replace with your deployed backend URL
+
+export const fetchRecommendations = async (movie) => {
+  // console.log(movie)
+  try {
+    console.log("inside api call:",movie)
+    const response = axios.post(`http://10.0.2.2:5000/recommend`, {
+      movie},
+    // },{ 
+      // method:"POST",
+    //  { headers:{
+    //     "Content-type":"Applications/json",
+    //   },
+      // body:JSON.stringify({movie:"Avatar" })
+    // }
+  );
+    console.log("API Response",(await response).data)
+    return (await response).data;
+  } catch (error) {
+    console.error('Error fetching recommendations:', error);
+    throw error;
+  }
+};
   
   // Function to fetch trending movies
   export const fetchTrendingMovies = async () => {

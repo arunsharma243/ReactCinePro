@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 // import Loading from '../../components/loading';
 import { fetchTrendingMovies,fetchUpcomingMovies,fetchTopRatedMovies } from '../../api/moviedb';
 import Loading from '../../components/Loading';
+import MatchingHelpModal from '../../components/MatchingHelpModal';
 
 
 
@@ -33,19 +34,19 @@ const HomeScreen = () => {
 
   const getTrendingMovies=async()=>{
     const data=await fetchTrendingMovies();
-    // console.log('trending movies:',data);
+    //  console.log('trending movies:',data);
     if(data && data.results) setTrending(data.results);
       setLoading(false)
   }
   const getUpcomingMovies=async(page)=>{
     const data=await fetchUpcomingMovies(page);
-    // console.log('trending movies:',data);
+    // console.log('upcoming movies:',data);
     if(data && data.results) setUpcoming(data.results);
       setLoading(false)
   }
   const getTopRatedMovies=async(page)=>{
     const data=await fetchTopRatedMovies(page);
-    // console.log('trending movies:',data);
+   //  console.log('top Rated:',data);
     if(data && data.results) setTopRated(data.results);
       setLoading(false)
   }
@@ -89,7 +90,7 @@ const HomeScreen = () => {
       </ScrollView>
       )
     }
-
+   <MatchingHelpModal/>
    
   </View>
   )

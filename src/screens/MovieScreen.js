@@ -1,4 +1,4 @@
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View ,Dimensions,Image, Alert,Linking} from 'react-native'
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View ,Dimensions,Image, Alert,Linking, FlatList} from 'react-native'
 import React,{useState,useEffect, useContext} from 'react'
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -12,7 +12,8 @@ import {BookmarkContext} from '../contexts/BookmarkContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loading from '../components/Loading';
 import Toast from 'react-native-simple-toast';
-
+import { fetchRecommendations } from '../api/moviedb';
+import RecommendationCard from '../components/RecommendationCard';
 
 const { width, height } = Dimensions.get('window');
 const MovieScreen = () => {
@@ -27,6 +28,7 @@ const MovieScreen = () => {
      else 
     {
       mediaType='tv'
+      // console.log('MediaType::',mediaType)
     }
   
 
@@ -73,25 +75,42 @@ const MovieScreen = () => {
       }
   });
 }
- 
+
 
   const navigation=useNavigation();
   const[cast,setCast]=useState([])
  
   const [movie,setMovie]=useState({});
   const [similarMovies,setSimilarMovies]=useState([]);
+  const [recommendation_name, setRecommendation_name] = useState([]);
+  const [recommendation_poster, setRecommendation_poster] = useState([]);
+  const [recommendation_id, setRecommendation_id] = useState([]);
 
   // console.log('itemids',item.id)
   useEffect(()=>{
     console.log('itemid',item.id)
     console.log('mediatype',item.media_type)
-    
+    console.log(item)
+    console.log("title",item.original_title)
     
     console.log(mediaType)
     setLoading(true);
-    getMoviesDetails(item.id,mediaType);
-    getMovieCredits(item.id,mediaType);
-    getSimilarMovies(item.id,mediaType);
+    if(item.media_type==="tv")
+    {
+      getMoviesDetails(item.id,"tv");
+    getMovieCredits(item.id,"tv");
+    getSimilarMovies(item.id,"tv");
+    getRecommendations(item.original_title)
+    }
+    else{
+      getMoviesDetails(item.id,"movie");
+    getMovieCredits(item.id,"movie");
+    getSimilarMovies(item.id,"movie");
+    getRecommendations(item.original_title)
+    }
+    // getMoviesDetails(item.id,item.media_type);
+    // getMovieCredits(item.id,item.media_type);
+    // getSimilarMovies(item.id,item.media_type);
        },[item])
 
        useEffect(()=>{
@@ -122,21 +141,37 @@ const MovieScreen = () => {
          if(data && data.results) setSimilarMovies(data.results);
          setLoading(false)
        }
+       const getRecommendations = async (movie) => {
+        try {
+          // console.log("kesw",movie)
+          // console.log("Calling fetchRecommendations...");
+          const data = await  fetchRecommendations(movie);
+          console.log("chdsbchj",data.id)
+          setRecommendation_name(data.recommendations)
+          setRecommendation_poster(data.posters)
+          setRecommendation_id(data.id)
+        
+        } 
+        catch (error) {
+          console.log('Failed to fetch recommendationsdcmd!');
+        }
+      };
+      
 
        const handleDownload=()=>{
         // console.log(item.title)
        let url=""
        if(item.original_language=="hi" || item.original_language=="ta" || item.original_language=="te" || item.original_language=="kn" || item.original_language=="pa" || item.original_language=="mr" || item.original_language=="ml") {
-         url = `https://topmovies.tel/download-${mediaType === 'movie' ? downloadTitle(item.title) : downloadTitle(item.name)}`;
+         url = `https://topmovies.beer/download-${item.media_type === 'tv' ? downloadTitle(item.name) : downloadTitle(item.title)}`;
 
     }
     else if(item.original_language=="ja")
     {
-       url = `https://animeflix.pm/download-${mediaType === 'movie' ? downloadTitle(item.title) : downloadTitle(item.name)}`;
+       url = `https://animeflix.pm/download-${item.media_type === 'tv' ? downloadTitle(item.name) : downloadTitle(item.title)}`;
 
     }
     else{
-      url = `https://moviesmod.day/download-${mediaType === 'movie' ? downloadTitle(item.title) : downloadTitle(item.name)}}`;
+      url = `https://moviesmod.day/download-${item.media_type === 'tv' ? downloadTitle(item.name) : downloadTitle(item.title)}}`;
      
     }
     Linking.openURL(url).catch((err) => {
@@ -153,6 +188,12 @@ const MovieScreen = () => {
       
         return ans;
       }
+    
+      const renderItem = ({ item, index }) => {
+        return (
+          <RecommendationCard movie={item} poster={recommendation_poster[index]} id={recommendation_id[index]}/>
+        );
+      };
 
       if (loading) {
         return (
@@ -190,12 +231,12 @@ const MovieScreen = () => {
        style={styles.movieImage}
      />
 
-        {/* <LinearGradient
-         colors={['transparent', 'rgba(1,1,1,1)', 'rgba(23,23,23,)']} 
+        <LinearGradient
+         colors={['transparent', 'rgba(1,1,1,1)', 'rgba(23,23,23,1)']} 
         style={styles.gradient}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
-      /> */}
+      /> 
       <View style={[ { marginTop: -(height * 0.09) }]}>
       {/* Movie Title */}
       <Text style={styles.title}>
@@ -233,6 +274,22 @@ const MovieScreen = () => {
   {similarMovies.length>0 && 
   <MovieList title="Similar Movies" hideSeeAll={true} data={similarMovies}/>
   }
+
+   {recommendation_name.length>0 &&(
+   <View style={styles.container}>
+      <Text style={styles.titleText}>Recommended Movies</Text>
+      <FlatList
+        data={recommendation_name}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => index.toString()}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+      />
+    </View>)
+}
+  {/* {recommendations.length>0 && 
+  <MovieList title="Recommended Movies" hideSeeAll={true} data={recommendations}/>
+  } */}
       
     
 
@@ -302,4 +359,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 8, // Equivalent to space-x-2
     textAlign: 'center',
   },
+  titleText:{
+    color:"white",
+    fontSize:20,
+    marginLeft:20,
+    marginBottom:20
+  }
 })
